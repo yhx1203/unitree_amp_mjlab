@@ -5,11 +5,3 @@ __pycache__/
 outputs/
 wandb/
 MUJOCO_LOG.TXT
-
-# Training outputs are ignored by default. Keep only the published checkpoint.
-logs/**
-!logs/
-!logs/rsl_rl/
-!logs/rsl_rl/g1_amp_walking/
-!logs/rsl_rl/g1_amp_walking/amp_walk_test/
-!logs/rsl_rl/g1_amp_walking/amp_walk_test/model_1000.pt
