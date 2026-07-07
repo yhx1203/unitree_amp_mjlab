@@ -76,18 +76,7 @@ python scripts/sim2sim_mujoco_g1_amp.py \
 ```
 ![mujoco](docs/mujoco.gif)
 
-## Citation
 
-If you use this codebase or any part of it in your research or project, please cite:
-
-```bibtex
-@software{xu2026unitree_amp_mjlab,
-  author = {Yiheng Xu},
-  title = {unitree_amp_mjlab: AMP-Based Reinforcement Learning Codebase for the Unitree G1 Humanoid Robot, Based on MJLab.},
-  url = {https://github.com/yhx1203/unitree_amp_mjlab},
-  year = {2026}
-}
-```
 
 ## Acknowledgements
 
