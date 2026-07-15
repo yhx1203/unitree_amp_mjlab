@@ -58,6 +58,7 @@ def unitree_g1_amp_flat_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
   twist_cmd.rel_standing_envs = 0.0
   if play:
     twist_cmd.heading_command = False
+    twist_cmd.ranges.heading = None
   command_ranges = AMP_PLAY_COMMAND_RANGES if play else AMP_COMMAND_RANGES
   twist_cmd.ranges.lin_vel_x = command_ranges["lin_vel_x"]
   twist_cmd.ranges.lin_vel_y = command_ranges["lin_vel_y"]
