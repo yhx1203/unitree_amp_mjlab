@@ -13,8 +13,8 @@ AMP_COMMAND_RANGES = {
 }
 AMP_PLAY_COMMAND_RANGES = {
   "lin_vel_x": (0.5, 0.5),
-  "lin_vel_y": (0.5, 0.5),
-  "ang_vel_z": (0.5, 0.5),
+  "lin_vel_y": (0.0, 0.0),
+  "ang_vel_z": (0.0, 0.0),
 }
 AMP_NUM_ENVS = 4096
 
