@@ -46,7 +46,9 @@ G1_DEFAULT_JOINT_POS: Tuple[float, ...] = (
 class AmpRslRlOnPolicyRunnerCfg(RslRlOnPolicyRunnerCfg):
   """Runner config fields consumed by :class:`AmpOnPolicyRunner`."""
 
-  amp_motion_files: Tuple[str, ...] = ("src/assets/motions/g1/walk1_subject1_0_1400.csv",)
+  amp_motion_files: Tuple[str, ...] = (
+    "src/assets/motions/g1/walk1_subject1_0_1400.csv",
+  )
   amp_motion_input_fps: float = 30.0
   amp_default_joint_pos: Tuple[float, ...] = G1_DEFAULT_JOINT_POS
   amp_num_preload_transitions: int = 200000

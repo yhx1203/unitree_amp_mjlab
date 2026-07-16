@@ -106,6 +106,88 @@ class NativeVelocityKeyboardController:
     )
 
 
+def _install_viser_velocity_gui(
+  env: ManagerBasedRlEnv,
+  command_name: str = "twist",
+) -> None:
+  """Create Viser controls only for velocity axes that are not locked."""
+  term = env.command_manager.get_term(command_name)
+  ranges = getattr(term.cfg, "ranges", None)
+  if ranges is None:
+    return
+
+  axis_ranges = (
+    (0, "lin_vel_x", ranges.lin_vel_x),
+    (1, "lin_vel_y", ranges.lin_vel_y),
+    (2, "ang_vel_z", ranges.ang_vel_z),
+  )
+  active_axes = [
+    (index, label, max(abs(float(limits[0])), abs(float(limits[1]))))
+    for index, label, limits in axis_ranges
+    if max(abs(float(limits[0])), abs(float(limits[1]))) > 0.0
+  ]
+
+  original_compute = term.compute
+  gui_state: dict[str, Any] = {
+    "enabled": None,
+    "sliders": [],
+    "get_env_idx": None,
+  }
+
+  def compute_with_gui(dt: float) -> None:
+    original_compute(dt)
+    enabled = gui_state["enabled"]
+    get_env_idx = gui_state["get_env_idx"]
+    if enabled is None or not enabled.value or get_env_idx is None:
+      return
+    env_idx = get_env_idx()
+    for axis_index, slider in gui_state["sliders"]:
+      term.vel_command_b[env_idx, axis_index] = slider.value
+
+  def create_gui(name: str, server: Any, get_env_idx: Any) -> None:
+    from viser import Icon
+
+    sliders: list[tuple[int, Any]] = []
+    with server.gui.add_folder(name.capitalize()):
+      enabled = server.gui.add_checkbox("Enable", initial_value=False)
+      for axis_index, label, max_val in active_axes:
+        max_input = server.gui.add_slider(
+          f"Max {label}",
+          initial_value=max(max_val, 0.1),
+          step=0.1,
+          min=0.1,
+          max=10.0,
+        )
+        slider = server.gui.add_slider(
+          label,
+          min=-max_val,
+          max=max_val,
+          step=0.05,
+          initial_value=0.0,
+        )
+
+        @max_input.on_update
+        def _(_event: Any, _slider=slider, _max_input=max_input) -> None:
+          _slider.min = -_max_input.value
+          _slider.max = _max_input.value
+
+        sliders.append((axis_index, slider))
+
+      zero_button = server.gui.add_button("Zero", icon=Icon.SQUARE_X)
+
+      @zero_button.on_click
+      def _(_event: Any) -> None:
+        for _, slider in sliders:
+          slider.value = 0.0
+
+    gui_state["enabled"] = enabled
+    gui_state["sliders"] = sliders
+    gui_state["get_env_idx"] = get_env_idx
+
+  term.compute = compute_with_gui
+  term.create_gui = create_gui
+
+
 class FootholdPlacementDebugAdapter:
   """Expose the foothold reward debug drawing to older MJLab viewers."""
 
@@ -447,6 +529,8 @@ def run_play(task_id: str, cfg: PlayConfig):
       )
     NativeMujocoViewer(env, policy, key_callback=key_callback).run()
   elif resolved_viewer == "viser":
+    if "twist" in env.unwrapped.command_manager.active_terms:
+      _install_viser_velocity_gui(env.unwrapped)
     ViserPlayViewer(env, policy).run()
   else:
     raise RuntimeError(f"Unsupported viewer backend: {resolved_viewer}")
@@ -458,7 +542,7 @@ def main():
   # Parse first argument to choose the task.
   # Import tasks to populate the registry.
   import mjlab.tasks  # noqa: F401
-  import src.tasks
+  import src.tasks  # noqa: F401
 
   all_tasks = list_tasks()
   chosen_task, remaining_args = tyro.cli(
